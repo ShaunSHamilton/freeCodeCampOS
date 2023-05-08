@@ -18,6 +18,9 @@
 - [ ] Configuring a course
   - [ ] Required files for different features
 - [ ] Contributing workflow
+- [ ] `.logs/`
+  - [ ] How `.temp.log` works
+- [ ] `bash/.bashrc`
 
 ## Features
 
