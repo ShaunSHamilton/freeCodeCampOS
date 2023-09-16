@@ -1,48 +1,20 @@
-FROM ubuntu:20.04
+FROM ubuntu:jammy
 
-ARG USERNAME=camper
-ARG REPO_NAME=freeCodeCampOS
-ARG HOMEDIR=/workspace/$REPO_NAME
+# Install:
+# - git (and git-lfs), for git operations (to e.g. push your work).
+#   Also required for setting up your configured dotfiles in the workspace.
+# - sudo, while not required, is recommended to be installed, since the
+#   workspace user (`gitpod`) is non-root and won't be able to install
+#   and use `sudo` to install any other tools in a live workspace.
+RUN apt-get update && apt-get install -yq \
+    git \
+    git-lfs \
+    sudo \
+    && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/*
 
-ENV TZ="America/New_York"
+# Create the camper user. UID must be 33333.
+RUN useradd -l -u 33333 -G sudo -md /home/camper -s /bin/bash -p camper camper
 
-RUN apt-get update && apt-get install -y sudo
+USER camper
 
-# Unminimize Ubuntu to restore man pages
-RUN yes | unminimize
-
-# Set up timezone
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-
-# Set up user, disable pw, and add to sudo group
-RUN adduser --disabled-password \
-  --gecos '' ${USERNAME}
-
-RUN adduser ${USERNAME} sudo
-
-RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> \
-  /etc/sudoers
-
-# Install packages for projects
-RUN sudo apt-get install -y curl git bash-completion man-db firefox
-
-# Install Node LTS
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-RUN sudo apt-get install -y nodejs
-
-# # Rust
-# RUN sudo apt-get install -y build-essential
-# RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
-# ENV PATH="/root/.cargo/bin:${PATH}"
-
-# /usr/lib/node_modules is owned by root, so this creates a folder ${USERNAME} 
-# can use for npm install --global
-WORKDIR ${HOMEDIR}
-RUN mkdir ~/.npm-global
-RUN npm config set prefix '~/.npm-global'
-
-# Configure course-specific environment
 COPY . .
-WORKDIR ${HOMEDIR}
-
-RUN cd ${HOMEDIR} && npm ci

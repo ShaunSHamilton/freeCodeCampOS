@@ -1,15 +1,20 @@
-FROM gitpod/workspace-full:latest
+FROM gitpod/workspace-base:2023-09-15-18-50-46
 
-ARG REPO_NAME=freeCodeCampOS
-ARG HOMEDIR=/workspace/$REPO_NAME
+# Install:
+# - git (and git-lfs), for git operations (to e.g. push your work).
+#   Also required for setting up your configured dotfiles in the workspace.
+# - sudo, while not required, is recommended to be installed, since the
+#   workspace user (`gitpod`) is non-root and won't be able to install
+# #   and use `sudo` to install any other tools in a live workspace.
+# RUN apt-get update && apt-get install -yq \
+#     git \
+#     git-lfs \
+#     sudo \
+#     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/*
 
-WORKDIR ${HOMEDIR}
+# Create the camper user. UID must be 33333.
+# RUN useradd -l -u 33333 -G sudo -md /home/camper -s /bin/bash -p camper camper
 
-RUN bash -c 'VERSION="18" \
-    && source $HOME/.nvm/nvm.sh && nvm install $VERSION \
-    && nvm use $VERSION && nvm alias default $VERSION'
 
-RUN echo "nvm use default &>/dev/null" >> ~/.bashrc.d/51-nvm-fix
-
-RUN sudo apt-get update && sudo apt-get upgrade -y
-ENV HOME=${HOMEDIR}
+RUN sudo usermod -l camper -d /home/camper -m gitpod
+# USER camper
